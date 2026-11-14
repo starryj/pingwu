@@ -156,9 +156,23 @@ fun PingWuRoot(
     }
 
     // 从通知点进来时，直接落在拍照验证页。
+    // 这里踩过一次真机崩溃（0.17.2，22:25）：这个 effect 比 NavHost 先声明，冷启动那一帧
+    // NavHost 可能还没把导航图装好，直接 navigate 会抛
+    // 「Cannot navigate to capture. Navigation graph has not been set」，整个进程被带走。
+    // 现在先等图就绪再跳，而且无论成败都兜住，绝不因为一次跳转把 App 崩掉。
     LaunchedEffect(initialRoute) {
-        if (initialRoute == Routes.CAPTURE && route != Routes.CAPTURE) {
+        if (initialRoute != Routes.CAPTURE) return@LaunchedEffect
+        if (nav.currentDestination?.route == Routes.CAPTURE) return@LaunchedEffect
+        var waited = 0
+        while (nav.currentDestination == null && waited < 2000) {
+            kotlinx.coroutines.delay(50)
+            waited += 50
+        }
+        if (nav.currentDestination?.route == Routes.CAPTURE) return@LaunchedEffect
+        runCatching {
             nav.navigate(Routes.CAPTURE) { launchSingleTop = true }
+        }.onFailure {
+            android.util.Log.w("PwNav", "navigate to capture failed: ${it.message}")
         }
     }
 

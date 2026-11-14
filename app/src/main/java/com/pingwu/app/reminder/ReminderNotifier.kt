@@ -133,7 +133,9 @@ object ReminderNotifier {
                     .bigText("$timeLabel · 拍一张「$itemName」，才算这一次完成。"),
             )
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            // 必须是 ALARM/CALL 类别：Android 14 起全屏 Intent 只对这两类放行，
+            // 用 CATEGORY_REMINDER 的话系统会把全屏降级成横幅，锁屏时也弹不出来。
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pending)
             .addAction(0, "去拍照", capturePending)

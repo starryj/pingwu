@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "cc-safety-net": "^2.7.13"
+  },
+  "_npx": {
+    "packages": [
+      "cc-safety-net"
+    ]
+  }
+}

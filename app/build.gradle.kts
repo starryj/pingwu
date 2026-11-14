@@ -14,8 +14,8 @@ android {
         applicationId = "com.pingwu.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 36
-        versionName = "0.17.2-m17"
+        versionCode = 37
+        versionName = "0.17.3-m17"
     }
 
     buildFeatures {
