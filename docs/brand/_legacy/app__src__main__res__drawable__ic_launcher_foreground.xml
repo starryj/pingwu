@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 胶囊药丸：左半白、右半浅青，斜放 -40° -->
+    <group android:rotation="-40" android:pivotX="54" android:pivotY="54">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M52,39 L36,39 A15,15 0 0,0 36,69 L52,69 Z" />
+        <path
+            android:fillColor="#CFE8E4"
+            android:pathData="M52,39 L72,39 A15,15 0 0,1 72,69 L52,69 Z" />
+        <path
+            android:strokeColor="#2F6F6B"
+            android:strokeWidth="1.6"
+            android:pathData="M52,39.6 L52,68.4" />
+    </group>
+</vector>

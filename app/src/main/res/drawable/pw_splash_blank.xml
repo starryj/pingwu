@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    系统启动画面（Android 12+）用的「空」图标。
+    App 自己的开屏封面已经带文字了，系统的那个只有图标的中间帧不需要出现，
+    这里给一个全透明的形状，系统就只会画一层底色（和封面同色），
+    视觉上等于「点图标 → 直接看到带文字的开屏图」。
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>

@@ -1,0 +1,9 @@
+凭物 · PingWu
+Copyright 2026 PingWu contributors
+
+This product includes software developed by the PingWu project.
+
+Third-party components and their licenses:
+- AndroidX / Jetpack Compose / Room / CameraX — Apache License 2.0
+- OpenCV (org.opencv:opencv) — Apache License 2.0
+- Poppins typeface (MEMENTO wordmark) — SIL Open Font License 1.1

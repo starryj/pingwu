@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 启动主题：冷启动期间先铺底色，避免系统默认白闪一下；封面在 Compose 里接上。
+         深墨是默认；用户在「我的」选了纸白时，MainActivity 会在 super.onCreate 之前
+         setTheme(Theme.PingWu.Paper)，系统启动画面和窗口底色就跟着走，不会再先闪一下深墨。 -->
+    <style name="Theme.PingWu" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pw_ink</item>
+    </style>
+
+    <style name="Theme.PingWu.Paper" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pw_paper</item>
+    </style>
+</resources>

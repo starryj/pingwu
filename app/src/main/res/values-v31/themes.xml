@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ 的系统启动画面。
+         图标故意留空（@drawable/pw_splash_blank）：App 有自己的开屏封面（带文字），
+         系统那层「只有图标」的中间帧不需要露脸，只留一层和封面同色的底，
+         这样冷启动看起来就是「点图标 → 直接出现带文字的开屏图」。 -->
+    <style name="Theme.PingWu" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pw_ink</item>
+        <item name="android:windowSplashScreenBackground">@color/pw_ink</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/pw_splash_blank</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+
+    <style name="Theme.PingWu.Paper" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/pw_paper</item>
+        <item name="android:windowSplashScreenBackground">@color/pw_paper</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/pw_splash_blank</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
+        <item name="android:windowSplashScreenAnimationDuration">0</item>
+    </style>
+</resources>

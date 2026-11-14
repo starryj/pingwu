@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 仅 debug 构建：允许明文 HTTP，便于用本机 mock 服务验证在线识别的请求内容。
+     release 不包含这个文件，正式包仍然只走 https。 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>

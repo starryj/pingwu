@@ -1,0 +1,29 @@
+{
+ "model": "yolox-nano",
+ "num_classes": 1,
+ "input": [
+  1,
+  3,
+  640,
+  640
+ ],
+ "input_order": "BGR, planar CHW",
+ "input_scale": 1,
+ "input_value_range": "0-255 (no /255)",
+ "pad_value": 114,
+ "letterbox": "resize keep aspect, pad right/bottom only, no offset",
+ "output": "[batch, N, 6] = cx, cy, w, h in input pixels, obj_conf, cls_conf",
+ "num_anchors": 8400,
+ "conf_threshold": 0.55,
+ "nms_iou": 0.3,
+ "merge_iou": 0.4,
+ "merge_contain": 0.8,
+ "onnx": "pill_ft7_basic.onnx",
+ "onnx_bytes": 4592587,
+ "onnx_sha256": "91B2DB5205F0B0248EE655CC48B7B17C5073732E7131ABEE72FE30A2B4782685",
+ "opset": 13,
+ "ckpt": "pill_ft7_640/latest",
+ "trained": "2026-11-12",
+ "folded": "静态 batch 导出 + onnxruntime ORT_ENABLE_BASIC 图优化折叠（去掉 Expand 等动态形状算子），否则 OpenCV 4.14 的 dnn 解析会 OOM 加载失败（2026-11-12 真机教训）",
+ "notes": "conf 0.55 / NMS 0.30 / clusterMerge iou 0.40 contain 0.80; eval: user-47-photo set 39/47 (83.0%, under-count 5->2, MAE 0.30->0.23), named 21/21, val22 15/22, cc0val 10/22, synthetic val exact 0.8675"
+}

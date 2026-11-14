@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 品牌色：与 pingwu-logo 的墨棕 / 纸白一致，勿随主题改（图标、启动页用） -->
+<resources>
+    <color name="pw_brand_brown">#9E4D2F</color>
+    <color name="pw_icon_bg">#F5F0E3</color>
+    <color name="pw_ink">#0B1216</color>
+    <color name="pw_paper">#F5F0E3</color>
+</resources>
