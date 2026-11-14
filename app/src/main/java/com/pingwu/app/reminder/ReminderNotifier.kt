@@ -143,6 +143,7 @@ object ReminderNotifier {
             .setOnlyAlertOnce(true)
 
         // 全屏页是加分项：没授权或不是第一条时，退回普通高优先级通知，不硬闯。
+        ReminderLaunch.markPosted(context)
         val fullScreenAllowed = canUseFullScreen(context)
         Log.d("PwReminder", "post id=$notificationId fullScreen=$fullScreen canUseFullScreen=$fullScreenAllowed sdk=${Build.VERSION.SDK_INT}")
         if (fullScreen && fullScreenAllowed) {

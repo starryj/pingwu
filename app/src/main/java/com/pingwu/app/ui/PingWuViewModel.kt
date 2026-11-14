@@ -27,6 +27,7 @@ import com.pingwu.app.network.AiConfig
 import com.pingwu.app.network.AiSettings
 import com.pingwu.app.network.JudgeTarget
 import com.pingwu.app.network.OnlineVisionClient
+import com.pingwu.app.reminder.ReminderLaunch
 import com.pingwu.app.reminder.ReminderNotifier
 import com.pingwu.app.reminder.ReminderScheduler
 import com.pingwu.app.ui.theme.ThemePrefs
@@ -722,6 +723,30 @@ class PingWuViewModel(app: Application) : AndroidViewModel(app) {
     /** 改某件物品的验证窗口（分钟）。 */
     fun updateWindow(itemId: Int, minutes: Int) {
         viewModelScope.launch { repo.updateWindow(itemId.toLong(), minutes) }
+    }
+
+    /** 调试用：照着闹钟那条路走一遍——发通知 + 直接拉起到点页。 */
+    fun debugFireDue(onDone: (String) -> Unit = {}) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val task = repo.duePendingList().firstOrNull()
+            if (task == null) {
+                withContext(Dispatchers.Main) { onDone("没有到点的待拍，先造一条") }
+                return@launch
+            }
+            ReminderNotifier.notify(getApplication(), task.itemName, task.countPerDose, task.timeLabel)
+            if (!ReminderLaunch.shouldSkip(getApplication(), task.occurrenceId)) {
+                ReminderLaunch.launch(getApplication(), task, "notify")
+            }
+            withContext(Dispatchers.Main) { onDone("已模拟：${'$'}{task.itemName}") }
+        }
+    }
+
+    /** 调试用：造一条到点待拍，方便验证全屏/解锁补弹。 */
+    fun debugMakeDueNow(onDone: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            val id = runCatching { repo.debugMakeDueNow() }.getOrNull()
+            onDone(if (id == null) "没有可用的物品" else "已造一条到点待拍 #$id")
+        }
     }
 
     fun clearEvidence() {

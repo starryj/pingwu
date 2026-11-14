@@ -43,6 +43,8 @@ class ReminderActivity : ComponentActivity() {
         // 铃声与振动由这里自己播，不走通知渠道：渠道声音会被系统/ROM 的通知设置吞掉。
         AlarmPlayer.start(this, reason = "activity")
 
+        // 全屏页起来了，悬浮层就不该再压着
+        ReminderOverlay.hide()
         val itemName = intent.getStringExtra(EXTRA_ITEM_NAME) ?: "那件东西"
         val count = intent.getIntExtra(EXTRA_COUNT, 1)
         val timeLabel = intent.getStringExtra(EXTRA_TIME_LABEL) ?: "该拍了"

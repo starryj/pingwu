@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import com.pingwu.app.data.core.PingWuDatabase
 import com.pingwu.app.data.core.PingWuRepository
 import com.pingwu.app.reminder.ReminderNotifier
+import com.pingwu.app.reminder.ReminderOverlay
 import com.pingwu.app.reminder.ReminderScheduler
 import com.pingwu.app.ui.PingWuRoot
 import com.pingwu.app.ui.theme.LauncherAlias
@@ -39,12 +40,17 @@ open class MainActivity : ComponentActivity() {
         const val EXTRA_ROUTE = "route"
         private const val ROUTE_CAPTURE = "capture"
 
+        /** App 是否正显示在前台；解锁补弹靠它判断要不要跳出来。 */
+        @Volatile
+        var isVisible: Boolean = false
+
         /** 封面停留多久再淡出（毫秒）。 */
         private const val SPLASH_HOLD_MS = 1000L
         private const val SPLASH_FADE_MS = 320L
     }
 
     private var initialRoute by mutableStateOf<String?>(null)
+
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* 结果不影响主流程 */ }
@@ -59,6 +65,15 @@ open class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         initialRoute = intent?.getStringExtra(EXTRA_ROUTE)
+        // 调试：`adb shell am start ... --ez debug_overlay true` 直接盖一层悬浮提醒，
+        // 用来验「解锁态到点页」这条路的渲染和按钮，不依赖闹钟真的到点。
+        if (BuildConfig.DEBUG && intent?.getBooleanExtra("debug_overlay", false) == true) {
+            // 延后一点点：onResume 里会 hide()，这一下要压在它后面才看得见。
+            window.decorView.postDelayed(
+                { ReminderOverlay.show(this, "测试物品", 4, "测试提醒") },
+                1200L,
+            )
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
@@ -130,6 +145,18 @@ open class MainActivity : ComponentActivity() {
                 }
             },
         )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isVisible = true
+        // 人自己回到 App 了，悬浮的到点页就该让位
+        com.pingwu.app.reminder.ReminderOverlay.hide()
+    }
+
+    override fun onPause() {
+        isVisible = false
+        super.onPause()
     }
 
     override fun onNewIntent(intent: Intent) {

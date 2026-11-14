@@ -46,6 +46,15 @@ class ReminderReceiver : BroadcastReceiver() {
                         coverPhotoKey = task.coverPhotoKey,
                     )
                 }
+                // 解锁状态下系统不会放行全屏 Intent、只给横幅，普通 startActivity 也会被
+                // 后台启动限制拦下；拿到悬浮窗权限的，就直接盖一层自己的到点页。
+                due.firstOrNull()?.let { task ->
+                    if (ReminderOverlay.shouldUse(app)) {
+                        ReminderOverlay.show(app, task.itemName, task.countPerDose, task.timeLabel)
+                    } else if (!ReminderLaunch.shouldSkip(app, task.occurrenceId)) {
+                        ReminderLaunch.launch(app, task, "notify")
+                    }
+                }
                 repo.markMissed()
                 ReminderScheduler.scheduleNext(app)
             } finally {

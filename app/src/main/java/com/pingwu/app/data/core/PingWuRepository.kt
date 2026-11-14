@@ -519,6 +519,25 @@ class PingWuRepository(private val db: PingWuDatabase) {
         today: LocalDate = LocalDate.now(zone),
     ): EvidenceStats = StatsCalculator.compute(occurrences, evidence, today)
 
+    /**
+     * 调试用：给第一件还没删的物品造一条「现在就到点」的待拍，
+     * 用来验证到点页到底弹不弹。正式版不会调它。
+     */
+    suspend fun debugMakeDueNow(): Long? {
+        val item = db.itemDao().getAll().firstOrNull { !it.archived } ?: return null
+        val now = nowMs()
+        return db.occurrenceDao().insert(
+            OccurrenceEntity(
+                itemId = item.id,
+                localDate = LocalDate.now(zone).toString(),
+                timeLabel = "现在",
+                scheduledAt = now - 5_000L,
+                state = "PENDING",
+                windowMinutes = 30,
+            ),
+        )
+    }
+
     // ---------- 内部 ----------
 
     private fun ItemDraft.toReminderEntity(itemId: Long) = ReminderEntity(

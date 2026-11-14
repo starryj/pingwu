@@ -70,6 +70,8 @@ import com.pingwu.app.network.AiConfig
 import com.pingwu.app.network.AiPreset
 import com.pingwu.app.reminder.AlarmPlayer
 import com.pingwu.app.reminder.ReminderActivity
+import com.pingwu.app.reminder.ReminderLaunch
+import com.pingwu.app.reminder.ReminderOverlay
 import com.pingwu.app.reminder.ReminderHealth
 import com.pingwu.app.reminder.ReminderScheduler
 import com.pingwu.app.reminder.ReminderNotifier
@@ -186,7 +188,7 @@ fun ProfileScreen(
         ReminderPermissionCard()
 
         // 真机验收用的测试入口（仅 debug 包显示）
-        DebugCard()
+        DebugCard(vm)
 
         // 设置
         CollapseCard(
@@ -385,6 +387,7 @@ private fun ReminderPermissionCard() {
     var granted by remember { mutableStateOf(ReminderNotifier.canPost(context)) }
     var exact by remember { mutableStateOf(canScheduleExact(context)) }
     var fullScreen by remember { mutableStateOf(ReminderNotifier.canUseFullScreen(context)) }
+    var overlay by remember { mutableStateOf(ReminderOverlay.canShow(context)) }
     var lastFire by remember { mutableStateOf(ReminderHealth.lastFireText(context)) }
     var selfTest by remember { mutableStateOf(ReminderHealth.selfTestText(context)) }
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -394,6 +397,7 @@ private fun ReminderPermissionCard() {
                 granted = ReminderNotifier.canPost(context)
                 exact = canScheduleExact(context)
                 fullScreen = ReminderNotifier.canUseFullScreen(context)
+                overlay = ReminderOverlay.canShow(context)
                 lastFire = ReminderHealth.lastFireText(context)
                 selfTest = ReminderHealth.selfTestText(context)
             }
@@ -421,13 +425,34 @@ private fun ReminderPermissionCard() {
         InfoRow("通知权限", if (granted) "已允许" else "未允许")
         InfoRow("精确闹钟", if (exact) "已允许" else "未允许 · 可能晚几分钟")
         InfoRow("锁屏全屏", if (fullScreen) "已允许" else "未允许 · 只弹通知")
+        InfoRow("解锁时显示", if (overlay) "悬浮盖屏" else "只有通知")
         InfoRow("最近一次提醒", lastFire ?: "还没响过")
         if (selfTest != null) InfoRow("到点自检", selfTest!!)
+        Text(
+            text = "解锁时系统不会给你全屏页，只肯弹一条横幅。开了「显示在其他应用上层」，到点会直接盖一层自己的提醒；锁屏时仍走全屏通知。",
+            style = PwType.tiny,
+            color = p.faint,
+            modifier = Modifier.padding(top = 10.dp),
+        )
 
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            SmallButton(
+                if (overlay) "悬浮显示设置" else "允许悬浮显示",
+                primary = false,
+                modifier = Modifier.weight(1f),
+            ) {
+                runCatching {
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                            android.net.Uri.parse("package:${'$'}{context.packageName}"),
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                }
+            }
             SmallButton("通知设置", primary = false, modifier = Modifier.weight(1f)) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -604,7 +629,7 @@ private fun openLockScreenSettings(context: android.content.Context) {
  * 只在 debug 包里出现，发布版不会有这块。
  */
 @Composable
-private fun DebugCard() {
+private fun DebugCard(vm: PingWuViewModel) {
     if (!BuildConfig.DEBUG) return
     val p = LocalPwPalette.current
     val context = LocalContext.current
@@ -618,6 +643,60 @@ private fun DebugCard() {
             color = p.faint,
             modifier = Modifier.padding(top = 6.dp),
         )
+        // 到点页到底弹没弹，光看通知栏说不清，把时间线摆出来
+        var tick by remember { mutableStateOf(0) }
+        val posted = remember(tick) { ReminderLaunch.lastPostLabel(context) }
+        val launched = remember(tick) { ReminderLaunch.lastLaunchLabel(context) }
+        val result = remember(tick) { ReminderLaunch.lastResult(context) }
+        Column(modifier = Modifier.padding(top = 10.dp)) {
+            InfoRow("上次发通知", posted)
+            InfoRow("上次弹出", launched)
+            InfoRow("最近结果", result)
+        }
+        Text(
+            text = "解锁状态下系统只给横幅；这两条记录分别代表「通知发出了」和「到点页真的起来了」。",
+            style = PwType.tiny,
+            color = p.faint,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+        SmallButton(
+            "造一条现在到点的待拍",
+            primary = false,
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+        ) {
+            vm.debugMakeDueNow { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+        }
+        SmallButton(
+            "5 秒后模拟到点（先按 home 回桌面）",
+            primary = true,
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+        ) {
+            Toast.makeText(context, "5 秒后模拟到点；现在按 home 回桌面", Toast.LENGTH_LONG).show()
+            Handler(Looper.getMainLooper()).postDelayed({
+                vm.debugFireDue { msg -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show() }
+            }, 5_000)
+        }
+        SmallButton(
+            "盖一层悬浮提醒（直接测）",
+            primary = false,
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+        ) {
+            if (!ReminderOverlay.canShow(context)) {
+                Toast.makeText(context, "还没给「显示在其他应用上层」", Toast.LENGTH_SHORT).show()
+            } else {
+                ReminderOverlay.show(context, "测试物品", 4, "测试提醒")
+                Toast.makeText(context, "已盖上；按 home 看它还在不在", Toast.LENGTH_SHORT).show()
+            }
+        }
+        SmallButton(
+            "补弹一次（模拟解锁补弹）",
+            primary = false,
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+        ) {
+            ReminderLaunch.launch(context, null, "manual")
+            tick++
+            Toast.makeText(context, "已尝试拉起；看「上次弹出」这一行", Toast.LENGTH_SHORT).show()
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
