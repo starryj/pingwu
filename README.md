@@ -14,6 +14,14 @@
 
 ---
 
+## 下载安装
+
+- 最新版 APK 在 [Releases](https://github.com/starryj/pingwu/releases/latest)（arm64-v8a / armeabi-v7a，Android 8.0 及以上），点开下载后直接安装
+- 首次打开请允许相机与通知，否则到点不会弹、也拍不了照
+- 小米 / 红米还需要在系统设置里打开「自启动」「省电策略 → 无限制」「其他权限 → 后台弹出界面 / 锁屏显示」
+
+---
+
 ## 为什么做这个
 
 普通的提醒按一下「知道了」就过去了，转身就忘。
@@ -71,6 +79,17 @@ gradlew.bat :app:assembleDebug      # Windows
 ```bash
 ./gradlew :app:testDebugUnitTest :app:lintDebug
 ```
+
+打正式包（可选）：在仓库根目录放一个 `keystore.properties`（已被 `.gitignore` 忽略），内容形如
+
+```properties
+storeFile=<你的签名库路径>
+storePassword=<密码>
+keyAlias=<别名>
+keyPassword=<密码>
+```
+
+然后 `./gradlew :app:assembleRelease`。没有这个文件时 release 构建产出未签名包。
 
 ## 目录
 

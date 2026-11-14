@@ -46,3 +46,9 @@ Thumbs.db
 
 # 构建/工具意外在根目录落下的 Windows 设备名文件
 CON
+
+# 正式包签名（含密码），千万别提交
+keystore.properties
+
+# 本地打包产物（发布时手动上传）
+dist/

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -29,6 +31,42 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+
+    // 正式包签名：keystore.properties 不入库（见 .gitignore），仓库里只有模板说明。
+    // 没有这个文件时 release 构建产出未签名包，CI 或其他人自己配一份即可。
+    val keystoreProps = rootProject.file("keystore.properties")
+    signingConfigs {
+        if (keystoreProps.exists()) {
+            create("release") {
+                val props = Properties().apply {
+                    keystoreProps.inputStream().use { load(it) }
+                }
+                storeFile = rootProject.file(props.getProperty("storeFile"))
+                storePassword = props.getProperty("storePassword")
+                keyAlias = props.getProperty("keyAlias")
+                keyPassword = props.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // 先不混淆：CameraX / OpenCV / Compose 的 keep 规则还没逐一验过，
+            // 给别人装的包宁可大一点，也别装完闪退。
+            isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable = false
+            // 只打手机用的两种 ABI：OpenCV 的 x86/x86_64 库（合计 108MB）是模拟器才需要的，
+            // 放进去会让安装包从 45MB 涨到 170MB。
+            ndk {
+                abiFilters.clear()
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+            }
+            if (keystoreProps.exists()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 }
