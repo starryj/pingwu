@@ -55,3 +55,8 @@ dist/
 
 # 模拟器/ADB 的临时密钥与镜像文件，绝不入库
 .test-emu/
+
+# 误提交过的 npm / npx 缓存，别再进来
+.npm-cache/
+# Android 模拟器镜像，几个 G，别入库
+.test-avd/
