@@ -83,7 +83,7 @@ interface ScheduleDao {
     @Query("SELECT * FROM schedule ORDER BY createdAt ASC")
     fun observeAll(): Flow<List<ScheduleEntity>>
 
-    /** 只取「启用且药品未归档」的计划：归档药即使计划没停，也不能再生成剂量。 */
+    /** 只取「启用且物品未归档」的计划：归档的物品即使计划没停，也不能再生成待办。 */
     @Query(
         "SELECT s.* FROM schedule s INNER JOIN drug d ON d.id = s.drugId " +
             "WHERE s.enabled = 1 AND d.archived = 0"
@@ -105,7 +105,7 @@ interface ScheduleDao {
     @Query("DELETE FROM schedule WHERE id = :id")
     suspend fun delete(id: Long)
 
-    /** 药品归档时停用它的全部计划（历史剂量组保留，只影响未来）。 */
+    /** 物品归档时停用它的全部计划（历史待办保留，只影响未来）。 */
     @Query("UPDATE schedule SET enabled = 0 WHERE drugId = :drugId")
     suspend fun disableForDrug(drugId: Long)
 }
@@ -169,7 +169,7 @@ interface DoseGroupDao {
     fun observeRecent(since: Long, until: Long, limit: Int = 200): Flow<List<DoseGroupEntity>>
 }
 
-/** 剂量明细 + 药名（只读投影，用于验证页/提醒页） */
+/** 待办明细 + 物品名（只读投影，用于验证页/提醒页） */
 data class DoseItemWithName(
     @androidx.room.Embedded val item: DoseItemEntity,
     val drugName: String,

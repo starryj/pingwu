@@ -359,7 +359,7 @@ private fun EmptyHomeCard(onAdd: () -> Unit) {
             modifier = Modifier.padding(top = 10.dp),
         )
         Text(
-            text = "钥匙、钱包、护照、药，什么都行。到点它会提醒你，拍一张照，这一件才算做过。",
+            text = "钥匙、钱包、护照、工牌，什么都行。到点它会提醒你，拍一张照，这一件才算做过。",
             style = PwType.small,
             color = p.faint,
             modifier = Modifier.padding(top = 6.dp),

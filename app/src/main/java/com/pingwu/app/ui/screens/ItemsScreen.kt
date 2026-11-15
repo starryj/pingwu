@@ -96,7 +96,7 @@ fun ItemsScreen(
                 TicketCard(Modifier.fillMaxWidth(), padding = 18.dp) {
                     Text(text = "还没有物品", style = PwType.body, color = p.ink)
                     Text(
-                        text = "先添加一件你怕忘的东西：钥匙、钱包、护照、药，都行。",
+                        text = "先添加一件你怕忘的东西：钥匙、钱包、护照、工牌，都行。",
                         style = PwType.small,
                         color = p.faint,
                         modifier = Modifier.padding(top = 6.dp),

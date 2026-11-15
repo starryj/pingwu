@@ -267,7 +267,7 @@ fun CaptureScreen(onBack: () -> Unit, vm: PingWuViewModel) {
 
     /**
      * 本机判定：
-     * - 药品：数颗数（原有逻辑）。
+     * - 多件：数件数（原有逻辑）。
      * - 其它物品：拿它的登记照「认物」（ORB 特征点，旋转不变），认出来 + 照片质量过关就过；
      *   没登记过照片才退回数件数。
      */
@@ -542,7 +542,7 @@ fun CaptureScreen(onBack: () -> Unit, vm: PingWuViewModel) {
                 return@launch
             }
             val currentTask = task
-            // 调试用：非药品物品若登记过样子，就把登记照转 90°，模拟「换个方向」再判一次。
+            // 调试用：非多件物品若登记过样子，就把登记照转 90°，模拟「换个方向」再判一次。
             val simulated = currentTask?.let { t ->
                 if (categoryOf(t.category) != ItemCategory.MEDICINE && t.coverPhotoKey.isNotBlank()) {
                     ItemMatcher.load(t.coverPhotoKey)?.let { rotate(it, 90) }

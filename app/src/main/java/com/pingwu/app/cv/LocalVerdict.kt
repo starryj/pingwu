@@ -14,7 +14,7 @@ object LocalVerdictJudge {
         expected: Int,
         qualityOk: Boolean,
         qualityIssue: String? = null,
-        unit: String = "颗",
+        unit: String = "件",
     ): LocalVerdict = when {
         count != expected -> LocalVerdict(
             pass = false,

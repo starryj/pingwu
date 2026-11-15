@@ -15,7 +15,7 @@ object EvidenceCsv {
 
     private val timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", Locale.ROOT)
 
-    /** 列：日期, 时间, 物品, 剂量, 应服数, 状态, 迟到, 拍摄时间, 照片, 来源 */
+    /** 列：日期, 时间, 物品, 备注, 应拍数, 状态, 迟到, 拍摄时间, 照片, 来源 */
     private const val HEADER = "日期,时间,物品,备注,应拍数,状态,迟到,拍摄时间,照片,来源"
 
     fun build(

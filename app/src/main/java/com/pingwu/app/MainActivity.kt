@@ -20,10 +20,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import com.pingwu.app.data.core.PingWuDatabase
+import com.pingwu.app.settings.LegalConfig
 import com.pingwu.app.data.core.PingWuRepository
 import com.pingwu.app.reminder.ReminderNotifier
 import com.pingwu.app.reminder.ReminderOverlay
 import com.pingwu.app.reminder.ReminderScheduler
+import com.pingwu.app.ui.ConsentPrefs
+import com.pingwu.app.ui.ConsentScreen
 import com.pingwu.app.ui.PingWuRoot
 import com.pingwu.app.ui.theme.LauncherAlias
 import com.pingwu.app.ui.theme.PingWuTheme
@@ -51,6 +54,39 @@ open class MainActivity : ComponentActivity() {
 
     private var initialRoute by mutableStateOf<String?>(null)
 
+    /** 是否已同意隐私政策；未同意时只显示说明页。 */
+    private var consented by mutableStateOf(false)
+
+    /** 同意之后才做的事：申请通知权限、补齐今日待办、排下一个闹钟。 */
+    private fun startCore() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+        // 打开 App 时补齐今天的待办并排下一个闹钟；用户改完时间/重启后也能自愈。
+        CoroutineScope(Dispatchers.IO).launch {
+            val repo = PingWuRepository(PingWuDatabase.get(applicationContext))
+            repo.ensureSeeded()
+            repo.markMissed()
+            ReminderNotifier.ensureChannel(applicationContext)
+            ReminderScheduler.scheduleNext(applicationContext)
+        }
+    }
+
+    /** 打开隐私政策全文；没有浏览器就提示一下，不让点击变成无声的空动作。 */
+    private fun openPrivacyPolicy() {
+        runCatching {
+            startActivity(
+                Intent(Intent.ACTION_VIEW, android.net.Uri.parse(LegalConfig.PRIVACY_URL))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }.onFailure {
+            android.widget.Toast.makeText(this, "没有可用的浏览器", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* 结果不影响主流程 */ }
@@ -75,21 +111,9 @@ open class MainActivity : ComponentActivity() {
             )
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
-
-        // 打开 App 时补齐今天的待办并排下一个闹钟；用户改完时间/重启后也能自愈。
-        CoroutineScope(Dispatchers.IO).launch {
-            val repo = PingWuRepository(PingWuDatabase.get(applicationContext))
-            repo.ensureSeeded()
-            repo.markMissed()
-            ReminderNotifier.ensureChannel(applicationContext)
-            ReminderScheduler.scheduleNext(applicationContext)
-        }
+        // 首启合规：没同意隐私政策之前不申请权限、不碰数据库、不排提醒。
+        consented = ConsentPrefs.isAccepted(this)
+        if (consented) startCore()
 
         // 封面用普通 View 画，不用 Compose：系统的启动画面要等到 App 画出第一帧才收走，
         // 而 Compose 的第一帧要等组合/测量走完（冷启动约 0.6–0.9s），这段空档以前是一块
@@ -170,17 +194,30 @@ open class MainActivity : ComponentActivity() {
             setContent {
                 var mode by remember { mutableStateOf(ThemePrefs.load()) }
                 PingWuTheme(mode) {
-                    PingWuRoot(
-                        mode = mode,
-                        onToggleTheme = {
-                            val next = if (mode == ThemeMode.DARK) ThemeMode.PAPER else ThemeMode.DARK
-                            mode = next
-                            ThemePrefs.save(next)
-                            // 桌面图标切到对应主题的入口，下次冷启动的系统启动画面才跟着换。
-                            LauncherAlias.sync(this@MainActivity, next)
-                        },
-                        initialRoute = initialRoute,
-                    )
+                    // 同意之前不组合业务界面：既看不到数据，也不会触发任何初始化。
+                    if (consented) {
+                        PingWuRoot(
+                            mode = mode,
+                            onToggleTheme = {
+                                val next = if (mode == ThemeMode.DARK) ThemeMode.PAPER else ThemeMode.DARK
+                                mode = next
+                                ThemePrefs.save(next)
+                                // 桌面图标切到对应主题的入口，下次冷启动的系统启动画面才跟着换。
+                                LauncherAlias.sync(this@MainActivity, next)
+                            },
+                            initialRoute = initialRoute,
+                        )
+                    } else {
+                        ConsentScreen(
+                            onReadPolicy = { openPrivacyPolicy() },
+                            onAccept = {
+                                ConsentPrefs.accept(this@MainActivity)
+                                consented = true
+                                startCore()
+                            },
+                            onDecline = { finishAffinity() },
+                        )
+                    }
                 }
             }
         }

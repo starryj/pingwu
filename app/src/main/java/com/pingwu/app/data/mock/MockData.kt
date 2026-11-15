@@ -1,8 +1,8 @@
 package com.pingwu.app.data.mock
 
-/** 物品分类：只影响图标、文案与判定方式（药品数颗，其它认物）。 */
+/** 物品分类：只影响图标、文案与判定方式（多件数件数，其它认物）。 */
 enum class ItemCategory(val raw: String, val label: String, val unit: String) {
-    MEDICINE("MEDICINE", "药品", "颗"),
+    MEDICINE("MEDICINE", "多件", "件"),
     KEY("KEY", "钥匙", "件"),
     DOC("DOC", "证件", "件"),
     OTHER("OTHER", "其他", "件"),
@@ -15,7 +15,7 @@ fun categoryOf(raw: String): ItemCategory = when (raw) {
     else -> ItemCategory.OTHER
 }
 
-/** 这件东西的数词：药按颗，其余按件。 */
+/** 这件东西的数词：都是按件。 */
 fun unitOf(raw: String): String = categoryOf(raw).unit
 
 enum class DayStatus { PENDING, VERIFIED, MISSED }
@@ -23,7 +23,7 @@ enum class DayStatus { PENDING, VERIFIED, MISSED }
 data class MockItem(
     val id: Int,
     val name: String,
-    /** 备注：剂量、放哪儿……可为空 */
+    /** 备注：数量、放哪儿……可为空 */
     val note: String = "",
     val countLabel: String,
     /** 每次要拍几件 */

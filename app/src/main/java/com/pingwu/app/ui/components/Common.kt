@@ -110,7 +110,7 @@ fun StatusChip(text: String, tone: Color, modifier: Modifier = Modifier) {
     }
 }
 
-/** 物品图标：药品 / 钥匙 / 证件 / 其他，纯 Canvas，不依赖图片。 */
+/** 物品图标：多件 / 钥匙 / 证件 / 其他，纯 Canvas，不依赖图片。 */
 @Composable
 fun ItemGlyph(category: ItemCategory, size: Dp = 44.dp, modifier: Modifier = Modifier) {
     val p = LocalPwPalette.current

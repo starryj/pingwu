@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.pingwu.app.BuildConfig
+import com.pingwu.app.settings.LegalConfig
 import com.pingwu.app.R
 import com.pingwu.app.data.ReminderSoundPrefs
 import com.pingwu.app.data.mock.MockEvidenceDay
@@ -304,6 +305,25 @@ fun ProfileScreen(
             summary = "拍下来，才算真的做过",
         ) {
             InfoRow("版本", "v" + BuildConfig.VERSION_NAME)
+            InfoRow("备案号", LegalConfig.beianText())
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 7.dp)
+                    .clickable {
+                        runCatching {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(LegalConfig.PRIVACY_URL))
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                            )
+                        }
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(text = "隐私政策", style = PwType.small, color = p.faint)
+                Text(text = "查看全文 ›", style = PwType.label, color = p.amber)
+            }
             InfoRow("数据", "照片存本机 · 可导出 CSV")
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top = 10.dp).clickable { showClearDialog = true },

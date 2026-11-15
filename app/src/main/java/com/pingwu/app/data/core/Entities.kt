@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 /**
  * 真实数据模型（M2 起，M9 通用化）。
  *
- * 物品 = 一件看得见的东西（药片、钥匙、钱包、证件……都算）。
+ * 物品 = 一件看得见的东西（钥匙、钱包、证件、快递……都算）。
  * 提醒 = 这件物品什么时候该拍一次（每天 / 每周 / 每月 / 只一次）。
  * 待办 = 某一天某个时刻的一次「该拍」。
  * 凭物 = 真正拍下来、并核验通过的照片证据。
@@ -21,7 +21,7 @@ import androidx.room.PrimaryKey
 data class ItemEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
-    /** 备注：剂量、放在哪儿、什么牌子……都可以，可为空 */
+    /** 备注：放在哪儿、什么牌子……都可以，可为空 */
     val note: String = "",
     /** 每次要拍几件 */
     val countPerDose: Int = 1,
@@ -38,7 +38,7 @@ data class ItemEntity(
 /**
  * 一件物品「认得的样子」：一张照片里裁出来的一块。
  *
- * 一件东西可以登记好几块（相机、香水瓶、药片……），到点时全部认到才算完成；
+ * 一件东西可以登记好几块（相机、香水瓶、水杯……），到点时全部认到才算完成；
  * 可以先拍一部分、记下进度，剩下的晚点再拍。
  */
 @Entity(

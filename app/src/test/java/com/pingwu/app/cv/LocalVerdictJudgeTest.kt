@@ -18,7 +18,7 @@ class LocalVerdictJudgeTest {
     fun `rejects when count differs`() {
         val verdict = LocalVerdictJudge.judge(count = 3, expected = 4, qualityOk = true)
         assertFalse(verdict.pass)
-        assertEquals("本机看到 3颗，和应拍的 4颗对不上。", verdict.reason)
+        assertEquals("本机看到 3件，和应拍的 4件对不上。", verdict.reason)
     }
 
     @Test

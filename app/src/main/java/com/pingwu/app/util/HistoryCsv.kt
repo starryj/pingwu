@@ -12,7 +12,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/** 用药记录导出：UTF-8 BOM + CRLF，Excel 打开中文不乱码。 */
+/** 物品记录导出：UTF-8 BOM + CRLF，Excel 打开中文不乱码。 */
 object HistoryCsv {
 
     private val fileStamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmm")
@@ -34,7 +34,7 @@ object HistoryCsv {
                 null -> ""
             }
             val late = if (entry.isLate) context.getString(R.string.csv_late_yes) else ""
-            // 需求要求导出「最低置信度」：没有证据（漏服/未服）时留空，Excel 里一眼能看出没拍照
+            // 需求要求导出「最低置信度」：没有证据（漏拍/未拍）时留空，Excel 里一眼能看出没拍照
             val confidence = entry.minConfidence?.let { String.format(Locale.ROOT, "%.2f", it) } ?: ""
             if (entry.items.isEmpty()) {
                 sb.append(row(time, state, "", "", "", verdict, confidence, late)).append("\r\n")

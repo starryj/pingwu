@@ -117,7 +117,7 @@ fun AddItemScreen(
 
         Text(text = "它是哪一件东西？", style = PwType.title, color = p.ink)
         Text(
-            text = "钥匙、钱包、护照、药……只要是看得见、拍得到的东西都行。",
+            text = "钥匙、钱包、护照、工牌……只要是看得见、拍得到的东西都行。",
             style = PwType.small,
             color = p.faint,
             modifier = Modifier.padding(top = 4.dp, bottom = 18.dp),
@@ -126,8 +126,8 @@ fun AddItemScreen(
         // ---- 基本信息 ----
         TicketCard(padding = 16.dp) {
             PwLabel("物品")
-            Field("名称", name, "如 家门钥匙 / 盐酸二甲双胍片") { name = it }
-            Field("备注（可空）", note, "如 0.25g / 放在玄关抽屉") { note = it }
+            Field("名称", name, "如 家门钥匙 / 门禁卡") { name = it }
+            Field("备注（可空）", note, "如 银色 / 放在玄关抽屉") { note = it }
 
             Text(text = "每次几件", style = PwType.tiny, color = p.faint, modifier = Modifier.padding(top = 12.dp))
             Row(

@@ -3,7 +3,7 @@
     <string name="app_name">凭物</string>
 
     <!-- 旧数据层复用：历史导出文案（M5 接上） -->
-    <string name="csv_header">时间,状态,药名,计划颗数,实测颗数,验证,最低置信度,迟到</string>
+    <string name="csv_header">时间,状态,物品,计划数量,实测数量,验证,最低置信度,迟到</string>
     <string name="csv_verdict_pass">通过</string>
     <string name="csv_verdict_fail">未通过</string>
     <string name="csv_late_yes">是</string>
@@ -11,6 +11,6 @@
     <string name="history_state_reminding">提醒中</string>
     <string name="history_state_snoozed">已延后</string>
     <string name="history_state_verified">已验证</string>
-    <string name="history_state_missed">漏服</string>
-    <string name="history_state_skipped">本次未服</string>
+    <string name="history_state_missed">漏拍</string>
+    <string name="history_state_skipped">本次未拍</string>
 </resources>
