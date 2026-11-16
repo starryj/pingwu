@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -101,6 +102,7 @@ import com.pingwu.app.ui.components.StatusChip
 import com.pingwu.app.ui.components.TicketCard
 import com.pingwu.app.ui.theme.LocalPwPalette
 import com.pingwu.app.ui.theme.PwType
+import com.pingwu.app.util.CameraPrefs
 import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -135,6 +137,11 @@ fun CaptureScreen(onBack: () -> Unit, vm: PingWuViewModel) {
     var detectionText by remember { mutableStateOf<String?>(null) }
     var lastPhoto by remember { mutableStateOf<String?>(null) }
     var cameraError by remember { mutableStateOf<String?>(null) }
+
+    // 闪光灯：用手电筒常亮，取景时就亮，晚上才看得见东西摆在哪。
+    var camera by remember { mutableStateOf<Camera?>(null) }
+    var hasFlash by remember { mutableStateOf(false) }
+    var flashOn by remember { mutableStateOf(CameraPrefs.torchOn(context)) }
 
     // 登记样子模式：从物品详情「给这件东西拍个样子」进来，拍完不记凭物，
     // 只在照片上点出这件东西的几块样子，存成它的模板。
@@ -424,19 +431,35 @@ fun CaptureScreen(onBack: () -> Unit, vm: PingWuViewModel) {
                             it.surfaceProvider = previewView.surfaceProvider
                         }
                         provider.unbindAll()
-                        provider.bindToLifecycle(
+                        val bound = provider.bindToLifecycle(
                             lifecycleOwner,
                             CameraSelector.DEFAULT_BACK_CAMERA,
                             preview,
                             imageCapture,
                         )
+                        camera = bound
+                        hasFlash = bound.cameraInfo.hasFlashUnit()
                         cameraError = null
                     }
                 }.onFailure { cameraError = it.message ?: "相机打不开。" }
             },
             executor,
         )
-        onDispose { runCatching { future.get().unbindAll() } }
+        onDispose {
+            // 离开这一页就把手电筒关掉，别在别人手机上留一盏灯。
+            runCatching { camera?.cameraControl?.enableTorch(false) }
+            runCatching { future.get().unbindAll() }
+        }
+    }
+
+    // 开关一变就同步到相机；没闪光灯的机型这里直接不做事。
+    LaunchedEffect(flashOn, hasFlash, camera) {
+        val c = camera ?: return@LaunchedEffect
+        if (!hasFlash) {
+            if (flashOn) flashOn = false
+            return@LaunchedEffect
+        }
+        runCatching { c.cameraControl.enableTorch(flashOn) }
     }
 
     fun shoot() {
@@ -805,6 +828,31 @@ fun CaptureScreen(onBack: () -> Unit, vm: PingWuViewModel) {
             ) {
                 StatusChip("在线判定" + if (vm.aiActive) "已开启" else "未开启", if (vm.aiActive) p.amber else p.faint)
                 StatusChip("本机检测", p.mint)
+            }
+
+            // 闪光灯开关：只有带闪光灯的机型才显示。开着的时候取景就亮，
+            // 晚上能先看清东西摆在哪，不至于拍完才发现框里是黑的。
+            if (hasFlash) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 52.dp, end = 12.dp)
+                        .clip(CircleShape)
+                        .background(if (flashOn) p.amber else Color.Black.copy(alpha = 0.45f))
+                        .clickable(enabled = !busy) {
+                            val next = !flashOn
+                            flashOn = next
+                            CameraPrefs.saveTorch(context, next)
+                        }
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = if (flashOn) "闪光灯 · 开" else "闪光灯 · 关",
+                        style = PwType.label.copy(fontSize = 11.sp),
+                        color = if (flashOn) p.ink else Color.White.copy(alpha = 0.92f),
+                    )
+                }
             }
 
             Text(
